@@ -15,9 +15,27 @@ repositories {
 	mavenCentral()
 }
 
+apply from: "${rootProject.projectDir}/px3/dependencies.gradle"
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+	implementation project(':px3:px3-rest')
+	implementation project(':px3:px3-utils')
+	implementation project(':px3:px3-model')
+
+	// https://mvnrepository.com/artifact/com.auth0/java-jwt
+	implementation "com.auth0:java-jwt:$javaJwtVersion"
+
+	// https://mvnrepository.com/artifact/org.projectlombok/lombok
+	compileOnly "org.projectlombok:lombok:$lombokVersion"
+	annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+
+	// https://mvnrepository.com/artifact/commons-cli/commons-cli
+	implementation "commons-cli:commons-cli:$commonsCliVersion"
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 

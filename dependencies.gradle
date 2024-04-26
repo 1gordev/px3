@@ -1,8 +1,9 @@
 ext {
     springKafkaVersion = '3.1.1'
-    lombokVersion = '1.18.30'
+    lombokVersion = '1.18.32'
     poiVersion = '5.2.5'
     gsonVersion = '2.10.1'
     httpClientVersion = '5.2.5'
     javaJwtVersion = '4.4.0'
+    commonsCliVersion = '1.6.0'
 }

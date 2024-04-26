@@ -13,19 +13,23 @@ java {
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 apply from: "${rootProject.projectDir}/px3/dependencies.gradle"
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+    implementation project(':px3:px3-model')
+    implementation project(':px3:px3-utils')
+
+    // https://mvnrepository.com/artifact/com.auth0/java-jwt
+    implementation "com.auth0:java-jwt:$javaJwtVersion"
 
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
-
-    // https://mvnrepository.com/artifact/org.projectlombok/lombok
-    compileOnly "org.projectlombok:lombok:$lombokVersion"
-    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
 }
 
 test {
