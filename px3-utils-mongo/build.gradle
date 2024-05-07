@@ -13,6 +13,7 @@ java {
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 apply from: "${rootProject.projectDir}/px3/dependencies.gradle"

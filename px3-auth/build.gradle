@@ -25,6 +25,7 @@ dependencies {
 	implementation project(':px3:px3-rest')
 	implementation project(':px3:px3-utils')
 	implementation project(':px3:px3-model')
+	implementation project(':px3:px3-utils-mongo')
 
 	// https://mvnrepository.com/artifact/com.auth0/java-jwt
 	implementation "com.auth0:java-jwt:$javaJwtVersion"
