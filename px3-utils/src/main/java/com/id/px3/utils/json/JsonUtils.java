@@ -29,7 +29,7 @@ public class JsonUtils {
     }
 
     /**
-     * Convert a bean to a nested json with support for Instant and Duration
+     * Create a Gson serializer with support for Instant and Duration
      *
      * @return
      */
@@ -38,6 +38,22 @@ public class JsonUtils {
                 .registerTypeAdapter(Instant.class, new InstantTypeAdapter())
                 .registerTypeAdapter(Duration.class, new DurationTypeAdapter())
                 .create();
+    }
+
+    /**
+     * Create a Gson serializer with support for Instant and Duration
+     *
+     * @param snakeCase whether to use snake_case for field names
+     * @return
+     */
+    public static Gson newGson(boolean snakeCase) {
+        var builder = new GsonBuilder()
+                .registerTypeAdapter(Instant.class, new InstantTypeAdapter())
+                .registerTypeAdapter(Duration.class, new DurationTypeAdapter());
+        if (snakeCase) {
+            builder.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES);
+        }
+        return builder.create();
     }
 
     /**
