@@ -1,4 +1,4 @@
-package com.id.px3.auth.model;
+package com.id.px3.model;
 
 import java.util.Map;
 

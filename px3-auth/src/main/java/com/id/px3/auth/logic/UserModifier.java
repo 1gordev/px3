@@ -1,6 +1,6 @@
 package com.id.px3.auth.logic;
 
-import com.id.px3.auth.model.UserConfigValueType;
+import com.id.px3.model.UserConfigValueType;
 import com.id.px3.auth.model.entity.User;
 import com.id.px3.auth.repo.UserConfigRepo;
 import com.id.px3.auth.repo.UserRepo;

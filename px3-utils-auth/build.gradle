@@ -1,0 +1,59 @@
+plugins {
+    id 'java-library'
+    id 'org.springframework.boot' version '3.3.2'
+    id 'io.spring.dependency-management' version '1.1.4'
+}
+
+group = 'com.id'
+version = '1.0.0-rc1'
+
+java {
+    sourceCompatibility = '21'
+}
+
+repositories {
+    mavenCentral()
+}
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}
+
+apply from: "${rootProject.projectDir}/px3/dependencies.gradle"
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+    implementation(project(':px3:px3-model'))
+
+    // https://mvnrepository.com/artifact/org.projectlombok/lombok
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
+    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+
+    // https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml
+    implementation "org.apache.poi:poi-ooxml:$poiVersion"
+
+    // https://mvnrepository.com/artifact/com.google.code.gson/gson
+    implementation "com.google.code.gson:gson:$gsonVersion"
+
+    // https://mvnrepository.com/artifact/org.jetbrains/annotations
+    implementation 'org.jetbrains:annotations:24.1.0'
+
+    // https://mvnrepository.com/artifact/com.auth0/java-jwt
+    implementation "com.auth0:java-jwt:$javaJwtVersion"
+
+
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+
+}
+
+test {
+    useJUnitPlatform()
+}

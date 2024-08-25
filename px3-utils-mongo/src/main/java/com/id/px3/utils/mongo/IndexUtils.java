@@ -64,7 +64,15 @@ public class IndexUtils {
         if (documentFields != null) {
             for (String field : documentFields) {
                 Index idx = new Index().on(field, Sort.Direction.ASC);
-                mongoTemplate.indexOps(clazz).ensureIndex(idx);
+                try {
+                    mongoTemplate.indexOps(clazz).ensureIndex(idx);
+                } catch(Exception ex) {
+                    if(ex.getMessage().contains("already exists")) {
+                        log.warn("Index already exists for field: %s".formatted(field));
+                    } else {
+                        log.error("Error ensuring index for field: %s".formatted(field), ex);
+                    }
+                }
             }
         }
     }
@@ -110,7 +118,15 @@ public class IndexUtils {
         if (indexed.unique()) {
             idx = idx.unique();
         }
-        mongoTemplate.indexOps(clazz).ensureIndex(idx);
+        try {
+            mongoTemplate.indexOps(clazz).ensureIndex(idx);
+        } catch(Exception ex) {
+            if(ex.getMessage().contains("already exists")) {
+                log.warn("Index already exists for field: %s".formatted(field.getName()));
+            } else {
+                log.error("Error ensuring index for field: %s".formatted(field.getName()), ex);
+            }
+        }
     }
 
 }
