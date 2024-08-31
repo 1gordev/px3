@@ -29,6 +29,7 @@ public class JwtSecurityAspect {
 
             //  set the userId for the current request
             UserContextHolder.setUserId(userId);
+            UserContextHolder.setAuthToken(token);
 
             return joinPoint.proceed();
         } finally {

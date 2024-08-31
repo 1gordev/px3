@@ -1,18 +1,18 @@
 package com.id.px3.auth.repo;
 
-import com.id.px3.auth.model.entity.User;
 import com.id.px3.auth.model.entity.UserAccessLog;
 import com.id.px3.utils.mongo.IndexUtils;
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.UUID;
+
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
 
 @Service
 @Slf4j
@@ -42,9 +42,10 @@ public class UserAccessLogRepo {
         try {
             if (fieldValues != null && !fieldValues.isEmpty()) {
                 //  retrieve access entity
-                UserAccessLog access = mongoTemplate.findById(userId, UserAccessLog.class);
+                UserAccessLog access = mongoTemplate.findOne(query(where(UserAccessLog.USER_ID).is(userId)), UserAccessLog.class);
                 if (access == null) {
                     access = new UserAccessLog();
+                    access.setId(UUID.randomUUID().toString());
                     access.setUserId(userId);
                 }
 
@@ -52,23 +53,12 @@ public class UserAccessLogRepo {
                 UserAccessLog finalAccess = access;
                 fieldValues.forEach((field, value) -> {
                     switch (field) {
-                        case UserAccessLog.LAST_LOGIN:
-                            finalAccess.setLastLogin(value);
-                            break;
-                        case UserAccessLog.LAST_REFRESH:
-                            finalAccess.setLastRefresh(value);
-                            break;
-                        case UserAccessLog.LAST_LOGOUT:
-                            finalAccess.setLastLogout(value);
-                            break;
-                        case UserAccessLog.ACCESS_TOKEN_EXPIRE_AT:
-                            finalAccess.setAccessTokenExpireAt(value);
-                            break;
-                        case UserAccessLog.REFRESH_TOKEN_EXPIRE_AT:
-                            finalAccess.setRefreshTokenExpireAt(value);
-                            break;
-                        default:
-                            log.error(String.format("Unknown field '%s' for UserAccess", field));
+                        case UserAccessLog.LAST_LOGIN -> finalAccess.setLastLogin(value);
+                        case UserAccessLog.LAST_REFRESH -> finalAccess.setLastRefresh(value);
+                        case UserAccessLog.LAST_LOGOUT -> finalAccess.setLastLogout(value);
+                        case UserAccessLog.ACCESS_TOKEN_EXPIRE_AT -> finalAccess.setAccessTokenExpireAt(value);
+                        case UserAccessLog.REFRESH_TOKEN_EXPIRE_AT -> finalAccess.setRefreshTokenExpireAt(value);
+                        default -> log.error(String.format("Unknown field '%s' for UserAccess", field));
                     }
                 });
 

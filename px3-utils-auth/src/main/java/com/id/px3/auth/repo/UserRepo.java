@@ -71,4 +71,12 @@ public class UserRepo {
         return mongoTemplate.save(user);
     }
 
+    /**
+     * Delete a User by id
+     *
+     * @param userId - user id
+     */
+    public void deleteById(String userId) {
+        mongoTemplate.remove(new Query(Criteria.where(User.ID).is(userId)), User.class);
+    }
 }

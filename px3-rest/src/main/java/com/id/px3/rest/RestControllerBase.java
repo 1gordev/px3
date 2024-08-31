@@ -1,8 +1,6 @@
 package com.id.px3.rest;
 
 import com.id.px3.error.PxException;
-import com.id.px3.model.RestResponse;
-import org.apache.catalina.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,38 +14,22 @@ import java.util.stream.Stream;
 @RestControllerAdvice
 public abstract class RestControllerBase {
 
-    private ThreadLocal<String> userId = new ThreadLocal<>();
-
-    public String getUserId() {
-        return userId.get();
+    public String getAuthToken() {
+        return UserContextHolder.getAuthToken();
     }
 
-    public void setUserId(String userId) {
-        this.userId.set(userId);
+    public String getUserId() {
+        return UserContextHolder.getUserId();
     }
 
     @ExceptionHandler(PxException.class)
-    public final ResponseEntity<RestResponse<Void>> handlePxException(PxException ex, WebRequest request) {
-        RestResponse<Void> response = RestResponse.ofError(
-                ex.getStatusCode(),
-                ex.getMessage(),
-                Collections.singletonList(ex.getMessage() + " " + Stream.of(ex.getStackTrace())
-                        .map(StackTraceElement::toString)
-                        .collect(Collectors.joining(", ")))
-        );
-        return new ResponseEntity<>(response, ex.getStatusCode());
+    public final ResponseEntity<Exception> handlePxException(PxException ex, WebRequest request) {
+        return new ResponseEntity<>(ex, ex.getStatusCode());
     }
 
     @ExceptionHandler(Exception.class)
-    public final ResponseEntity<RestResponse<Void>> handleAllExceptions(Exception ex, WebRequest request) {
+    public final ResponseEntity<Exception> handleAllExceptions(Exception ex, WebRequest request) {
         // Utilize the ofError static method for generic exceptions
-        RestResponse<Void> response = RestResponse.ofError(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                ex.getMessage(),
-                Collections.singletonList(ex.getMessage() + " " + Stream.of(ex.getStackTrace())
-                        .map(StackTraceElement::toString)
-                        .collect(Collectors.joining(", ")))
-        );
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(ex, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

@@ -7,16 +7,19 @@ import com.id.px3.auth.repo.UserRepo;
 import com.id.px3.error.PxException;
 import com.id.px3.model.auth.UserModifyRequest;
 import com.id.px3.model.auth.UserDto;
+import com.id.px3.rest.RestControllerBase;
 import com.id.px3.rest.security.JwtSecured;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("user")
 @Slf4j
-public class UserRest {
+public class UserRest extends RestControllerBase {
 
     private final ApplicationContext appCtx;
     private final UserRepo userRepo;
@@ -24,6 +27,12 @@ public class UserRest {
     public UserRest(ApplicationContext appCtx, UserRepo userRepo) {
         this.appCtx = appCtx;
         this.userRepo = userRepo;
+    }
+
+    @GetMapping("password-rules")
+    @JwtSecured
+    public Map<String,String> getPasswordRules() {
+        return Map.of("value", appCtx.getBean(UserModifier.class).getPasswordRules());
     }
 
     @PostMapping
@@ -36,15 +45,31 @@ public class UserRest {
     @JwtSecured
     public UserDto update(@PathVariable String userId, @RequestBody UserModifyRequest userModify) {
         //  retrieve current user
-        User currentUser = userRepo.findById(userId).orElseThrow();
+        User requesingUser = userRepo.findById(getUserId()).orElseThrow();
         //  allow only ROOT or the user itself to update
-        if (!currentUser.getId().equals(userId)
-                && !currentUser.getRoles().contains(DefaultRoles.ROOT)
-                && !currentUser.getRoles().contains(DefaultRoles.USERS_WRITE)) {
-            log.debug("Current user id %s cannot update user id %s".formatted(currentUser.getId(), userId));
+        if (!requesingUser.getId().equals(userId)
+                && !requesingUser.getRoles().contains(DefaultRoles.ROOT)
+                && !requesingUser.getRoles().contains(DefaultRoles.USERS_WRITE)) {
+            log.debug("Current user id %s cannot update user id %s".formatted(requesingUser.getId(), userId));
             throw new PxException(HttpStatus.BAD_REQUEST, "Unauthorized to perform this action");
         }
 
         return appCtx.getBean(UserModifier.class).update(userId, userModify);
+    }
+
+    @DeleteMapping("{userId}")
+    @JwtSecured
+    public void delete(@PathVariable String userId) {
+        //  retrieve current user
+        User requesingUser = userRepo.findById(getUserId()).orElseThrow();
+        //  allow only ROOT or the user itself to delete
+        if (!requesingUser.getId().equals(userId)
+                && !requesingUser.getRoles().contains(DefaultRoles.ROOT)
+                && !requesingUser.getRoles().contains(DefaultRoles.USERS_WRITE)) {
+            log.debug("Current user id %s cannot delete user id %s".formatted(requesingUser.getId(), userId));
+            throw new PxException(HttpStatus.BAD_REQUEST, "Unauthorized to perform this action");
+        }
+
+        appCtx.getBean(UserModifier.class).delete(userId);
     }
 }

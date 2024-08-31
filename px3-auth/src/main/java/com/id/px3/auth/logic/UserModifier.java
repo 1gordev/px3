@@ -1,5 +1,7 @@
 package com.id.px3.auth.logic;
 
+import com.id.px3.error.PxException;
+import com.id.px3.model.DefaultRoles;
 import com.id.px3.model.UserConfigValueType;
 import com.id.px3.auth.model.entity.User;
 import com.id.px3.auth.repo.UserConfigRepo;
@@ -41,11 +43,15 @@ public class UserModifier {
             UserRoleRepo userRoleRepo,
             UserConfigRepo userConfigRepo,
             UserRepo userRepo,
-            @Value("${px3.auth.user.password-rules:^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@#$%^&+=]).{8,}$}") String passwordRules) {
+            @Value("${px3.auth.user.password-rules:^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$}") String passwordRules) {
         this.userRoleRepo = userRoleRepo;
         this.userConfigRepo = userConfigRepo;
         this.userRepo = userRepo;
         this.passwordRules = Pattern.compile(passwordRules);
+    }
+
+    public String getPasswordRules() {
+        return passwordRules.pattern();
     }
 
     /**
@@ -58,21 +64,29 @@ public class UserModifier {
 
         //  validate credentials
         if (userCreate.getUsername() == null || userCreate.getUsername().trim().isEmpty()) {
-            throw new IllegalArgumentException("Username cannot be empty");
+            var err = "Username cannot be empty";
+            log.debug(err);
+            throw new IllegalArgumentException(err);
         }
 
         if (userCreate.getPassword() == null || userCreate.getPassword().trim().isEmpty()) {
-            throw new IllegalArgumentException("Password cannot be empty");
+            var err = "Password cannot be empty";
+            log.debug(err);
+            throw new IllegalArgumentException(err);
         }
 
         //  check password rules
         if (!passwordRules.matcher(userCreate.getPassword()).matches()) {
-            throw new IllegalArgumentException("Password does not meet the required rules");
+            var err = "Password does not meet the required rules";
+            log.debug(err);
+            throw new IllegalArgumentException(err);
         }
 
         //  check if username already exists
         if (userRepo.findByUsername(userCreate.getUsername()).isPresent()) {
-            throw new IllegalArgumentException("Username already exists: %s".formatted(userCreate.getUsername()));
+            var err= "Username already exists: %s".formatted(userCreate.getUsername());
+            log.debug(err);
+            throw new IllegalArgumentException(err);
         }
 
         //  validate requested roles
@@ -141,6 +155,14 @@ public class UserModifier {
         return new UserDto(user.getId(), user.getUsername(), user.getRoles(), user.getConfig());
     }
 
+    /**
+     * Delete an existing user
+     *
+     * @param userId - user id
+     */
+    public void delete(String userId) {
+        userRepo.deleteById(userId);
+    }
 
     private void validateConfigs(UserModifyRequest userCreate) {
         if (userCreate.getConfig() != null && !userCreate.getConfig().isEmpty()) {
@@ -149,16 +171,22 @@ public class UserModifier {
                         userConfig -> {
                             //  validate config value
                             if (cfgVal == null) {
-                                throw new IllegalArgumentException("Config value cannot be null: %s".formatted(cfgKey));
+                                var err = "Config value cannot be null: %s".formatted(cfgKey);
+                                log.debug(err);
+                                throw new IllegalArgumentException(err);
                             } else {
                                 //  validate config value type
                                 if (!validateValueType(userConfig.getValueType(), cfgVal)) {
-                                    throw new IllegalArgumentException("Invalid config value type: %s".formatted(cfgKey));
+                                    var err = "Invalid config value type: %s".formatted(cfgKey);
+                                    log.debug(err);
+                                    throw new IllegalArgumentException(err);
                                 }
                             }
                         },
                         () -> {
-                            throw new IllegalArgumentException("Config not found: %s".formatted(cfgKey));
+                            var err = "Config not found: %s".formatted(cfgKey);
+                            log.debug(err);
+                            throw new IllegalArgumentException(err);
                         }
                 );
             });
@@ -167,11 +195,15 @@ public class UserModifier {
 
     private void validateRequestedRoles(UserModifyRequest userCreate) {
         if (userCreate.getRoles() != null && !userCreate.getRoles().isEmpty()) {
-            userCreate.getRoles().forEach(role -> {
-                if (userRoleRepo.findByCode(role).isEmpty()) {
-                    throw new IllegalArgumentException("Role not found: %s".formatted(role));
-                }
-            });
+
+            boolean isDefaultRole = userCreate.getRoles().stream().anyMatch(role -> DefaultRoles.getRoles().contains(role));
+            boolean isConfiguredRole = userCreate.getRoles().stream().anyMatch(role -> userRoleRepo.findByCode(role).isPresent());
+
+            if(!isDefaultRole && !isConfiguredRole) {
+                var err = "Role not found: %s".formatted(userCreate.getRoles());
+                log.debug(err);
+                throw new IllegalArgumentException(err);
+            }
         }
     }
 

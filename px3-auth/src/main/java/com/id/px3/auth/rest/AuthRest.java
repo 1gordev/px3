@@ -5,7 +5,6 @@ import com.id.px3.auth.model.entity.UserAccessLog;
 import com.id.px3.auth.repo.UserAccessLogRepo;
 import com.id.px3.auth.repo.UserRepo;
 import com.id.px3.error.PxException;
-import com.id.px3.model.RestResponse;
 import com.id.px3.model.auth.AuthResponse;
 import com.id.px3.model.auth.BasicAuth;
 import com.id.px3.model.auth.UserDto;
@@ -28,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 @RestController
-@RequestMapping("auth")
+@RequestMapping
 @Slf4j
 public class AuthRest extends RestControllerBase {
     private final UserRepo userRepo;
@@ -49,8 +48,8 @@ public class AuthRest extends RestControllerBase {
     }
 
     @GetMapping("ping")
-    public RestResponse<String> ping() {
-        return RestResponse.ofSuccess("pong");
+    public Map<String, Boolean> ping() {
+        return Map.of("success", true);
     }
 
     /**
@@ -59,8 +58,8 @@ public class AuthRest extends RestControllerBase {
      * @param authHeader - basic authentication header
      * @return AuthResponse
      */
-    @PostMapping("login")
-    public RestResponse<AuthResponse> login(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
+    @PostMapping("token")
+    public AuthResponse login(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
 
         //  extract username and password from the Basic Auth header
         BasicAuth result = RestUtil.extractBasicAuth(authHeader);
@@ -114,20 +113,20 @@ public class AuthRest extends RestControllerBase {
                     refreshTokenExpiresAt.toString()
             );
             log.debug("Authentication successful - %s".formatted(authResponse));
-            return RestResponse.ofSuccess(authResponse);
+            return authResponse;
         } else {
             log.debug("Password mismatch");
             throw new PxException(HttpStatus.UNAUTHORIZED, "Authentication failed");
         }
     }
 
-    @PostMapping("refresh")
-    public RestResponse<AuthResponse> refresh(@RequestHeader("Refresh-Token") String refreshToken) {
+    @PostMapping("token/refresh")
+    public AuthResponse refresh(@RequestHeader("Refresh-Token") String refreshToken) {
         //  validate the refresh token
         String subject = jwtService.validateTokenAndGetSubject(refreshToken);
 
         //  get user
-        User user = userRepo.findByUsername(subject).orElseThrow(() -> {
+        User user = userRepo.findById(subject).orElseThrow(() -> {
             log.debug("User not found");
             return new PxException(HttpStatus.UNAUTHORIZED, "User not found");
         });
@@ -162,7 +161,7 @@ public class AuthRest extends RestControllerBase {
         );
 
         log.debug("Token refresh successful - %s".formatted(authResponse));
-        return RestResponse.ofSuccess(authResponse);
+        return authResponse;
     }
 
 

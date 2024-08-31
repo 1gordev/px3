@@ -1,6 +1,6 @@
 package com.id.px3.auth.model.entity;
 
-import com.id.px3.auth.model.UserConfigValueType;
+import com.id.px3.model.UserConfigValueType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

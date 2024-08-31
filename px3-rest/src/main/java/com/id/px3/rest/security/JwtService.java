@@ -3,6 +3,7 @@ package com.id.px3.rest.security;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.id.px3.error.PxException;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,7 +43,6 @@ public class JwtService {
                 .withIssuedAt(Instant.now())
                 .withExpiresAt(Instant.now().plus(expiration))
                 .withClaim(CLAIM_ROLES, new ArrayList<>(roles))
-                .withClaim(CLAIM_ROLES, new ArrayList<>(roles))
                 .sign(Algorithm.HMAC256(secret));
     }
 
@@ -66,15 +66,17 @@ public class JwtService {
             //  check roles
             if (!requiredRoles.isEmpty()) {
                 List<String> tokenRoles = jwt.getClaim(CLAIM_ROLES).asList(String.class);
-                if (tokenRoles.stream().anyMatch(requiredRoles::contains)) {
+                if (tokenRoles.stream().noneMatch(requiredRoles::contains)) {
                     throw new JWTVerificationException("Token does not contain the required roles.");
                 }
             }
 
             //  return the username
             return jwt.getSubject();
+        } catch (TokenExpiredException expiredException) {
+            throw new PxException(HttpStatus.UNAUTHORIZED, "Token has expired");
         } catch (JWTVerificationException exception) {
-            throw new PxException(HttpStatus.UNAUTHORIZED);
+            throw new PxException(HttpStatus.FORBIDDEN, "Invalid token or roles");
         }
     }
 
@@ -94,8 +96,10 @@ public class JwtService {
 
             DecodedJWT jwt = verifier.verify(token);
             return jwt.getSubject();
+        } catch (TokenExpiredException expiredException) {
+            throw new PxException(HttpStatus.UNAUTHORIZED, "Token has expired");
         } catch (JWTVerificationException exception) {
-            throw new PxException(HttpStatus.UNAUTHORIZED);
+            throw new PxException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }
     }
 }
