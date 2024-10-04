@@ -13,13 +13,13 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf().disable() // Disable CSRF protection
-                .authorizeRequests()
-                .anyRequest().permitAll() // Allow all requests without authentication
-                .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS); // No session will be created by Spring Security
+        http.csrf(csrf -> csrf.ignoringRequestMatchers(request -> true))
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll()
+                )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                );
 
         return http.build();
     }
