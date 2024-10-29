@@ -43,7 +43,7 @@ public class UserModifier {
             UserRoleRepo userRoleRepo,
             UserConfigRepo userConfigRepo,
             UserRepo userRepo,
-            @Value("${px3.auth.user.password-rules:^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$}") String passwordRules) {
+            @Value("${px3.auth.user.password-rules:^(?:(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}|\\d{6})$}") String passwordRules) {
         this.userRoleRepo = userRoleRepo;
         this.userConfigRepo = userConfigRepo;
         this.userRepo = userRepo;
