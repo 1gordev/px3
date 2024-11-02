@@ -26,7 +26,11 @@ public abstract class RestControllerBase {
 
     @ExceptionHandler(PxException.class)
     public final ResponseEntity<Exception> handlePxException(PxException ex, WebRequest request) {
-        log.error("PxException: %s".formatted(ex.getMessage()), ex);
+        if(ex.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+            log.error("PxException: %s".formatted(ex.getMessage()));
+        } else {
+            log.error("PxException: %s".formatted(ex.getMessage()), ex);
+        }
         return new ResponseEntity<>(ex, ex.getStatusCode());
     }
 

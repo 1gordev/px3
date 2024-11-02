@@ -36,6 +36,7 @@ public class UserModifier {
      * Contains at least one lowercase letter (a-z).
      * Contains at least one digit (0-9).
      * Contains at least one special character (e.g., @, #, $, etc.).
+     * In alternative, a 6 digit pin is accepted
      */
     private final Pattern passwordRules;
 
