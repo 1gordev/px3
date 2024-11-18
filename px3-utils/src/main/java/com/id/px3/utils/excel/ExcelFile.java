@@ -22,11 +22,14 @@ public class ExcelFile {
 
     public Optional<ExcelSheet> getSheet(String sheetName) {
         try {
+            ExcelSheet es;
             if (sheetName == null || sheetName.isBlank()) {
-                return Optional.of(new ExcelSheet(workbook.getSheetAt(0)));
+                es = new ExcelSheet(workbook.getSheetAt(0));
             } else {
-                return Optional.of(new ExcelSheet(workbook.getSheet(sheetName)));
+                es = new ExcelSheet(workbook.getSheet(sheetName));
             }
+
+            return es.getWorkbookSheet() != null ? Optional.of(es) : Optional.empty();
         } catch (Exception e) {
             log.error(String.format("Error getting sheet '%s'", sheetName != null ? sheetName : "*NULL*"), e);
             return Optional.empty();

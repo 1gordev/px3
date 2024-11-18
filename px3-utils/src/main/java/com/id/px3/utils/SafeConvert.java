@@ -2,6 +2,7 @@ package com.id.px3.utils;
 
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class SafeConvert {
 
@@ -24,24 +25,34 @@ public class SafeConvert {
     }
 
     /**
-     * Convert an object to a string list.
-     * The expected object should be a csv string using the given separator.
-     * Each element of the returned list is trimmed.
+     * Converts an object to a list of strings split by rowSeparator (Pattern).
      *
-     * @param obj       source object
-     * @param separator separator
-     * @return optional string list
+     * @param obj           source object
+     * @param rowSeparator  row separator as a Pattern
+     * @return optional list of strings
      */
-    public static Optional<List<String>> toStringList(Object obj, String separator) {
-        List<String> ret = null;
-        try {
-            var str = toString(obj).orElse(null);
-            ret = str != null
-                    ? Arrays.stream(str.split(separator)).map(String::trim).toList()
-                    : null;
-        } catch (Exception ignored) {
+    public static Optional<List<String>> toStringList(Object obj, Pattern rowSeparator) {
+        if (obj == null) {
+            return Optional.empty();
         }
-        return Optional.ofNullable(ret);
+        String str = obj.toString();
+        String[] rows = rowSeparator.split(str); // Split using Pattern
+        return Optional.of(Arrays.asList(rows));
+    }
+
+    /**
+     * Converts an object to a list of strings with a single-character row separator.
+     *
+     * @param obj           source object
+     * @param rowSeparator  single character row separator
+     * @return optional list of strings
+     */
+    public static Optional<List<String>> toStringList(Object obj, String rowSeparator) {
+        // Use default separator `;` if no rowSeparator is specified
+        Pattern separatorPattern = rowSeparator == null || rowSeparator.length() != 1
+                ? Pattern.compile(";")
+                : Pattern.compile(Pattern.quote(rowSeparator));
+        return toStringList(obj, separatorPattern);
     }
 
     public static Optional<List<String>> toStringList(Object obj) {
@@ -49,14 +60,14 @@ public class SafeConvert {
     }
 
     /**
-     * Convert an object to a string map.
+     * Convert an object to a string map with a custom row separator.
      *
-     * @param obj         source object
-     * @param rowSeparator row separator
-     * @param equals      key-value separator
+     * @param obj          source object
+     * @param rowSeparator row separator as a Pattern
+     * @param equals       key-value separator
      * @return optional string map
      */
-    public static Optional<Map<String, String>> toStringMap(Object obj, String rowSeparator, String equals) {
+    public static Optional<Map<String, String>> toStringMap(Object obj, Pattern rowSeparator, String equals) {
         Map<String, String> ret = null;
         try {
             ret = new HashMap<>();
@@ -72,6 +83,22 @@ public class SafeConvert {
         } catch (Exception ignored) {
         }
         return Optional.ofNullable(ret);
+    }
+
+    /**
+     * Convert an object to a string map with a single-character row separator.
+     *
+     * @param obj          source object
+     * @param rowSeparator single character row separator
+     * @param equals       key-value separator
+     * @return optional string map
+     */
+    public static Optional<Map<String, String>> toStringMap(Object obj, String rowSeparator, String equals) {
+        // Use default separator `;` if no rowSeparator is specified
+        Pattern separatorPattern = rowSeparator == null || rowSeparator.length() != 1
+                ? Pattern.compile(";")
+                : Pattern.compile(Pattern.quote(rowSeparator));
+        return toStringMap(obj, separatorPattern, equals);
     }
 
     public static Optional<Map<String, String>> toStringMap(Object obj) {
