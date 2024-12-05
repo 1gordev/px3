@@ -170,7 +170,7 @@ public class SafeConvert {
             } else if (obj instanceof Double) {
                 return Optional.of(((Double) obj).longValue() == 1);
             } else {
-                List<String> trues = List.of("1", "true", "yes", "y", "checked", "on", "t");
+                List<String> trues = List.of("1.0", "1", "true", "yes", "y", "checked", "on", "t");
                 if (trues.contains(toString(obj).orElse("").trim().toLowerCase())) {
                     return Optional.of(true);
                 }
