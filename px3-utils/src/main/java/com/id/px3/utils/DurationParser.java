@@ -43,6 +43,7 @@ public class DurationParser {
                 case "m" -> Duration.ofMinutes(value);
                 case "h" -> Duration.ofHours(value);
                 case "d" -> Duration.ofDays(value);
+                case "y" -> Duration.ofDays(value * 365);
                 case "ms" -> Duration.ofMillis(value);
                 default -> throw new IllegalArgumentException("Unknown duration unit: " + unit);
             };
