@@ -197,30 +197,143 @@ public class ExcelGenerator {
     }
 
     /**
-     * Write a row to the first sheet.
+     * Write a row to the first sheet at the specified index.
      *
-     * @param row The row data to write.
+     * @param rowIndex The index where the row should be written (0-based).
+     * @param row      The row data to write.
      */
-    public void writeRow(List<String> row) {
-        writeRow(null, row);
+    public void writeRow(int rowIndex, List<String> row) {
+        writeRow(null, rowIndex, row);
     }
 
     /**
-     * Write a row to a specific sheet.
+     * Write a row to a specific sheet at the specified index.
      *
      * @param sheetName The name of the sheet to write to.
-     * @param row The row data to write.
+     * @param rowIndex  The index where the row should be written (0-based).
+     * @param row       The row data to write.
      */
-    public void writeRow(String sheetName, List<String> row) {
+    public void writeRow(String sheetName, int rowIndex, List<String> row) {
         Sheet sheet = sheetName != null ? workbook.getSheet(sheetName) : workbook.getSheetAt(0);
         if (sheet == null) {
             throw new IllegalArgumentException("Sheet not found: " + sheetName);
         }
 
-        Row newRow = sheet.createRow(sheet.getLastRowNum() + 1);
+        // Retrieve or create the row at the specified index
+        Row targetRow = sheet.getRow(rowIndex);
+        if (targetRow == null) {
+            targetRow = sheet.createRow(rowIndex);
+        }
+
+        // Write the cells in the row
         for (int i = 0; i < row.size(); i++) {
-            Cell cell = newRow.createCell(i);
+            Cell cell = targetRow.getCell(i);
+            if (cell == null) {
+                cell = targetRow.createCell(i);
+            }
             cell.setCellValue(row.get(i));
         }
+    }
+
+    /**
+     * Writes a row to a specific sheet with specified styles.
+     *
+     * @param sheetName  The name of the sheet (null for the first sheet).
+     * @param rowIndex   The index where the row should be written (0-based).
+     * @param row        The row data to write.
+     * @param cellStyles An array of CellStyles to apply to the cells.
+     */
+    public void writeRow(String sheetName, int rowIndex, List<String> row, RowStyle rowStyle) {
+        Sheet sheet = sheetName != null ? workbook.getSheet(sheetName) : workbook.getSheetAt(0);
+        if (sheet == null) {
+            throw new IllegalArgumentException("Sheet not found: " + sheetName);
+        }
+
+        Row targetRow = sheet.getRow(rowIndex);
+        if (targetRow == null) {
+            targetRow = sheet.createRow(rowIndex);
+        }
+
+        // Apply the row height
+        targetRow.setHeight(rowStyle.getRowHeight());
+
+        // Write the cells in the row
+        for (int i = 0; i < row.size(); i++) {
+            Cell cell = targetRow.getCell(i);
+            if (cell == null) {
+                cell = targetRow.createCell(i);
+            }
+            cell.setCellValue(row.get(i));
+            CellStyle[] cellStyles = rowStyle.getCellStyles();
+            if (cellStyles != null && i < cellStyles.length && cellStyles[i] != null) {
+                cell.setCellStyle(cellStyles[i]);
+            }
+        }
+    }
+
+    /**
+     * Clears the content of a row without deleting it.
+     *
+     * @param rowIndex The index of the row to clear.
+     */
+    public void clearRowContent(int rowIndex) {
+        clearRowContent(null, rowIndex);
+    }
+
+    /**
+     * Clears the content of a row without deleting it.
+     *
+     * @param sheetName The name of the sheet (null for the first sheet).
+     * @param rowIndex  The index of the row to clear.
+     */
+    public void clearRowContent(String sheetName, int rowIndex) {
+        Sheet sheet = sheetName != null ? workbook.getSheet(sheetName) : workbook.getSheetAt(0);
+        if (sheet == null) {
+            throw new IllegalArgumentException("Sheet not found: " + sheetName);
+        }
+
+        Row row = sheet.getRow(rowIndex);
+        if (row != null) {
+            for (Cell cell : row) {
+                cell.setCellValue("");
+            }
+        }
+    }
+
+    /**
+     * Copies the styles of a row for reuse.
+     *
+     * @param rowIndex The index of the row to copy styles from.
+     * @return The row's style
+     */
+    public RowStyle copyRowStyle(int rowIndex) {
+        return copyRowStyle(null, rowIndex);
+    }
+
+
+    /**
+     * Copies the styles of a row for reuse.
+     *
+     * @param sheetName The name of the sheet (null for the first sheet).
+     * @param rowIndex  The index of the row to copy styles from.
+     * @return The row's style
+     */
+    public RowStyle copyRowStyle(String sheetName, int rowIndex) {
+        Sheet sheet = sheetName != null ? workbook.getSheet(sheetName) : workbook.getSheetAt(0);
+        if (sheet == null) {
+            throw new IllegalArgumentException("Sheet not found: " + sheetName);
+        }
+
+        Row row = sheet.getRow(rowIndex);
+        if (row == null) {
+            return new RowStyle((short) 0, new CellStyle[0]);
+        }
+
+        CellStyle[] styles = new CellStyle[row.getLastCellNum()];
+        for (Cell cell : row) {
+            styles[cell.getColumnIndex()] = cell.getCellStyle();
+        }
+
+        return new RowStyle(row.getHeight(), styles);
     }
 }
