@@ -101,12 +101,13 @@ public class AuthRest extends RestControllerBase {
 
             //  return them via AuthResponse
             AuthResponse authResponse = new AuthResponse(
-                    new UserDto(
-                            user.getId(),
-                            user.getUsername(),
-                            user.getRoles(),
-                            user.getConfig()
-                    ),
+                    UserDto.builder()
+                            .id(user.getId())
+                            .username(user.getUsername())
+                            .roles(user.getRoles())
+                            .config(user.getConfig())
+                            .details(user.getDetails())
+                            .build(),
                     accessToken,
                     refreshToken,
                     accessTokenExpiresAt.toString(),
@@ -148,12 +149,13 @@ public class AuthRest extends RestControllerBase {
 
         // Return the new tokens
         AuthResponse authResponse = new AuthResponse(
-                new UserDto(
-                        user.getId(),
-                        user.getUsername(),
-                        user.getRoles(),
-                        user.getConfig()
-                ),
+                UserDto.builder()
+                        .id(user.getId())
+                        .username(user.getUsername())
+                        .roles(user.getRoles())
+                        .config(user.getConfig())
+                        .details(user.getDetails())
+                        .build(),
                 newAccessToken,
                 newRefreshToken,
                 accessTokenExpiresAt.toString(),

@@ -45,8 +45,13 @@ public class SafeConvert {
      *
      * @param obj           source object
      * @param rowSeparator  single character row separator
+     * @param trim          trim each string
      * @return optional list of strings
      */
+    public static Optional<List<String>> toStringList(Object obj, String rowSeparator, boolean trim) {
+        return toStringList(obj, rowSeparator).map(lst -> trim ? lst.stream().map(String::trim).toList() : lst);
+    }
+
     public static Optional<List<String>> toStringList(Object obj, String rowSeparator) {
         // Use default separator `;` if no rowSeparator is specified
         Pattern separatorPattern = rowSeparator == null || rowSeparator.length() != 1
@@ -70,7 +75,7 @@ public class SafeConvert {
     public static Optional<Map<String, String>> toStringMap(Object obj, Pattern rowSeparator, String equals) {
         Map<String, String> ret = null;
         try {
-            ret = new HashMap<>();
+            ret = new LinkedHashMap<>();
             Map<String, String> finalRet = ret;
             toStringList(obj, rowSeparator).ifPresent(list -> {
                 list.forEach(row -> {
@@ -93,6 +98,19 @@ public class SafeConvert {
      * @param equals       key-value separator
      * @return optional string map
      */
+    public static Optional<Map<String, String>> toStringMap(Object obj, String rowSeparator, String equals, boolean trim) {
+        return toStringMap(obj, rowSeparator, equals).map(map -> {
+            if (trim) {
+                return map.entrySet().stream()
+                        .collect(LinkedHashMap::new,
+                                (m, e) -> m.put(e.getKey().trim(), e.getValue().trim()),
+                                LinkedHashMap::putAll);
+            } else {
+                return map;
+            }
+        });
+    }
+
     public static Optional<Map<String, String>> toStringMap(Object obj, String rowSeparator, String equals) {
         // Use default separator `;` if no rowSeparator is specified
         Pattern separatorPattern = rowSeparator == null || rowSeparator.length() != 1
@@ -179,4 +197,25 @@ public class SafeConvert {
         }
         return Optional.of(false);
     }
+
+    /**
+     * Keep only alphanumeric characters from the given string.
+     *
+     * @param str - source string
+     * @param allowSpaces - allow spaces in the result
+     *
+     * @return true if the string satisfies the condition
+     */
+    public static boolean isAlphaNumeric(String str, boolean allowSpaces) {
+        // use regex to check if the string is alphanumeric
+        if (str != null) {
+            if (allowSpaces) {
+                return str.matches("^[a-zA-Z0-9 ]*$");
+            } else {
+                return str.matches("^[a-zA-Z0-9]*$");
+            }
+        }
+        return false;
+    }
+
 }

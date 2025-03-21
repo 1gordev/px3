@@ -68,26 +68,32 @@ public class UserInitializer {
     }
 
     private User rowToUser(Map<String, Object> row) {
-        return new User(
-                UUID.randomUUID().toString(),
-                SafeConvert.toString(row.get(User.USERNAME)).orElse("").trim(),
-                PasswordUtil.encodePassword(SafeConvert.toString(row.get(PASSWORD)).orElse("").trim()),
-                new HashSet<>(SafeConvert.toStringList(row.get(User.ROLES), ";").orElse(List.of())),
-                new HashMap<>(SafeConvert.toStringMap(row.get(User.CONFIG), ";", ":").orElse(Map.of()))
-        );
+        String userName = SafeConvert.toString(row.get(User.USERNAME)).orElse("").trim();
+        if(!SafeConvert.isAlphaNumeric(userName, false)) {
+            throw new IllegalArgumentException("Invalid username: %s".formatted(userName));
+        }
+
+        return User.builder()
+                .id(UUID.randomUUID().toString())
+                .username(userName)
+                .encPassword(PasswordUtil.encodePassword(SafeConvert.toString(row.get(PASSWORD)).orElse("").trim()))
+                .roles(new HashSet<>(SafeConvert.toStringList(row.get(User.ROLES), ";", true).orElse(List.of())))
+                .details(new HashMap<>(SafeConvert.toStringMap(row.get(User.DETAILS), ";", ":").orElse(Map.of())))
+                .config(new HashMap<>(SafeConvert.toStringMap(row.get(User.CONFIG), ";", ":").orElse(Map.of())))
+                .build();
     }
 
     private void initRoot() {
         //  proceed if users count is zero
         if (userRepo.count() == 0) {
             //  create default users
-            userRepo.save(new User(
-                    UUID.randomUUID().toString(),
-                    "root",
-                    PasswordUtil.encodePassword("root1234"),
-                    Set.of("ROOT"),
-                    Map.of()
-            ));
+            userRepo.save(User.builder()
+                    .id(UUID.randomUUID().toString())
+                    .username("root")
+                    .encPassword(PasswordUtil.encodePassword("root1234"))
+                    .roles(Set.of("ROOT"))
+                    .build());
+
         }
 
     }

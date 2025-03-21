@@ -97,18 +97,25 @@ public class UserModifier {
         validateConfigs(userCreate);
 
         //  create user
-        User newUser = new User(
-                UUID.randomUUID().toString(),
-                userCreate.getUsername(),
-                PasswordUtil.encodePassword(userCreate.getPassword()),
-                userCreate.getRoles(),
-                userCreate.getConfig()
-        );
+        var newUser = User.builder()
+                .id(UUID.randomUUID().toString())
+                .username(userCreate.getUsername())
+                .encPassword(PasswordUtil.encodePassword(userCreate.getPassword()))
+                .roles(userCreate.getRoles())
+                .config(userCreate.getConfig())
+                .details(userCreate.getDetails())
+                .build();
         log.debug("New user created: %s".formatted(newUser));
 
         //  persist and return userDto
         newUser = userRepo.save(newUser);
-        return new UserDto(newUser.getId(), newUser.getUsername(), newUser.getRoles(), newUser.getConfig());
+        return UserDto.builder()
+                .id(newUser.getId())
+                .username(newUser.getUsername())
+                .roles(newUser.getRoles())
+                .config(newUser.getConfig())
+                .details(newUser.getDetails())
+                .build();
     }
 
     /**
@@ -153,7 +160,13 @@ public class UserModifier {
 
         //  persist and return userDto
         user = userRepo.save(user);
-        return new UserDto(user.getId(), user.getUsername(), user.getRoles(), user.getConfig());
+        return UserDto.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .roles(user.getRoles())
+                .config(user.getConfig())
+                .details(user.getDetails())
+                .build();
     }
 
     /**

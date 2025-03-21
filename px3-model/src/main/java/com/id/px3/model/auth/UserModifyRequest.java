@@ -16,5 +16,6 @@ public class UserModifyRequest {
     private String username;
     private String password;
     private Set<String> roles;
-    private Map<String, Object> config;
+    private Map<String, String> config;
+    private Map<String, String> details;
 }
