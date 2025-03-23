@@ -2,6 +2,7 @@ package com.id.px3.auth.init;
 
 import com.id.px3.auth.model.entity.User;
 import com.id.px3.auth.repo.UserRepo;
+import com.id.px3.model.DefaultRoles;
 import com.id.px3.utils.SafeConvert;
 import com.id.px3.utils.excel.ExcelConfigService;
 import com.id.px3.utils.sec.PasswordUtil;
@@ -30,9 +31,17 @@ public class UserInitializer {
     @Value("${px3.auth.users.init-from-file.sheet:users}")
     private String initSheetName;
 
-    public UserInitializer(ExcelConfigService excelConfigService, UserRepo userRepo) {
+    private List<String> rootUsers = new ArrayList<>();
+    private List<String> rootPasswords = new ArrayList<>();
+
+    public UserInitializer(ExcelConfigService excelConfigService,
+                           UserRepo userRepo,
+                           @Value("${px3.auth.users.root-users:root}") String rootUsers,
+                           @Value("${px3.auth.users.root-passwords:root1234}") String rootPasswords) {
         this.excelConfigService = excelConfigService;
         this.userRepo = userRepo;
+        this.rootUsers = SafeConvert.toStringList(rootUsers, ",", true).orElse(List.of());
+        this.rootPasswords = SafeConvert.toStringList(rootPasswords, ",", true).orElse(List.of());
     }
 
     public void init() {
@@ -69,7 +78,7 @@ public class UserInitializer {
 
     private User rowToUser(Map<String, Object> row) {
         String userName = SafeConvert.toString(row.get(User.USERNAME)).orElse("").trim();
-        if(!SafeConvert.isAlphaNumeric(userName, false)) {
+        if (!SafeConvert.isAlphaNumeric(userName, false)) {
             throw new IllegalArgumentException("Invalid username: %s".formatted(userName));
         }
 
@@ -85,16 +94,19 @@ public class UserInitializer {
 
     private void initRoot() {
         //  proceed if users count is zero
-        if (userRepo.count() == 0) {
-            //  create default users
-            userRepo.save(User.builder()
-                    .id(UUID.randomUUID().toString())
-                    .username("root")
-                    .encPassword(PasswordUtil.encodePassword("root1234"))
-                    .roles(Set.of("ROOT"))
-                    .build());
-
+        if (userRepo.count() == 0 && !rootUsers.isEmpty() && rootUsers.size() == rootPasswords.size()) {
+            for (int i = 0; i < rootUsers.size(); i++) {
+                String u = rootUsers.get(i);
+                String p = rootPasswords.get(i);
+                if (u != null && !u.isBlank() && p != null && !p.isBlank()) {
+                    userRepo.save(User.builder()
+                            .id(UUID.randomUUID().toString())
+                            .username(u)
+                            .encPassword(PasswordUtil.encodePassword(p))
+                            .roles(Set.of(DefaultRoles.ROOT))
+                            .build());
+                }
+            }
         }
-
     }
 }
