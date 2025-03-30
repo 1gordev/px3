@@ -2,13 +2,11 @@ package com.id.px3.auth.model.entity;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @NoArgsConstructor
@@ -16,6 +14,10 @@ import java.util.Set;
 @ToString
 @Builder
 @Document("users")
+@CompoundIndex(name = "id_roles_idx", def = "{'id': 1, 'roles': 1}")
+@CompoundIndex(name = "id_indexedProps_idx", def = "{'id':1, 'indexedProps':1}")
+@CompoundIndex(name = "roles_indexedProps_idx", def = "{'roles':1, 'indexedProps':1}")
+@CompoundIndex(name = "id_roles_indexedProps_idx", def = "{'id':1, 'roles':1, 'indexedProps':1}")
 public class User {
 
     public static final String ID = "id";
@@ -24,6 +26,8 @@ public class User {
     public static final String ROLES = "roles";
     public static final String DETAILS = "details";
     public static final String CONFIG = "config";
+    public static final String ACTIVE = "active";
+    public static final String INDEXED_PROPS = "indexedProps";
 
     public static final String CFG_TOKEN_NEVER_EXPIRES = "tokenNeverExpires";
 
@@ -38,11 +42,19 @@ public class User {
     private String encPassword = "";
 
     @Builder.Default
+    @Indexed
     private Set<String> roles = new HashSet<>();
+
+    @Builder.Default
+    private Boolean active = true;
 
     @Builder.Default
     private Map<String, String> details = new HashMap<>();
 
     @Builder.Default
     private Map<String, String> config = new HashMap<>();
+
+    @Builder.Default
+    @Indexed
+    private List<String> indexedProps = new ArrayList<>();
 }

@@ -1,10 +1,8 @@
 package com.id.px3.auth.logic;
 
-import com.id.px3.error.PxException;
 import com.id.px3.model.DefaultRoles;
 import com.id.px3.model.UserConfigValueType;
 import com.id.px3.auth.model.entity.User;
-import com.id.px3.auth.repo.UserConfigRepo;
 import com.id.px3.auth.repo.UserRepo;
 import com.id.px3.auth.repo.UserRoleRepo;
 import com.id.px3.model.auth.UserModifyRequest;
@@ -26,7 +24,6 @@ import java.util.regex.Pattern;
 public class UserModifier {
 
     private final UserRoleRepo userRoleRepo;
-    private final UserConfigRepo userConfigRepo;
     private final UserRepo userRepo;
 
     /**
@@ -42,11 +39,9 @@ public class UserModifier {
 
     public UserModifier(
             UserRoleRepo userRoleRepo,
-            UserConfigRepo userConfigRepo,
             UserRepo userRepo,
             @Value("${px3.auth.user.password-rules:^(?:(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}|\\d{6})$}") String passwordRules) {
         this.userRoleRepo = userRoleRepo;
-        this.userConfigRepo = userConfigRepo;
         this.userRepo = userRepo;
         this.passwordRules = Pattern.compile(passwordRules);
     }
@@ -85,7 +80,7 @@ public class UserModifier {
 
         //  check if username already exists
         if (userRepo.findByUsername(userCreate.getUsername()).isPresent()) {
-            var err= "Username already exists: %s".formatted(userCreate.getUsername());
+            var err = "Username already exists: %s".formatted(userCreate.getUsername());
             log.debug(err);
             throw new IllegalArgumentException(err);
         }
@@ -94,7 +89,7 @@ public class UserModifier {
         validateRequestedRoles(userCreate);
 
         //  validate configs
-        validateConfigs(userCreate);
+        validateConfigsAndDetails(userCreate);
 
         //  create user
         var newUser = User.builder()
@@ -102,6 +97,7 @@ public class UserModifier {
                 .username(userCreate.getUsername())
                 .encPassword(PasswordUtil.encodePassword(userCreate.getPassword()))
                 .roles(userCreate.getRoles())
+                .active(userCreate.getActive())
                 .config(userCreate.getConfig())
                 .details(userCreate.getDetails())
                 .build();
@@ -143,7 +139,7 @@ public class UserModifier {
         validateRequestedRoles(userModify);
 
         //  validate configs
-        validateConfigs(userModify);
+        validateConfigsAndDetails(userModify);
 
         //  retrieve user
         User user = userRepo.findById(userId).orElseThrow();
@@ -178,32 +174,59 @@ public class UserModifier {
         userRepo.deleteById(userId);
     }
 
-    private void validateConfigs(UserModifyRequest userCreate) {
-        if (userCreate.getConfig() != null && !userCreate.getConfig().isEmpty()) {
-            userCreate.getConfig().forEach((cfgKey, cfgVal) -> {
-                userConfigRepo.findByCode(cfgKey).ifPresentOrElse(
-                        userConfig -> {
-                            //  validate config value
-                            if (cfgVal == null) {
-                                var err = "Config value cannot be null: %s".formatted(cfgKey);
-                                log.debug(err);
-                                throw new IllegalArgumentException(err);
-                            } else {
-                                //  validate config value type
-                                if (!validateValueType(userConfig.getValueType(), cfgVal)) {
-                                    var err = "Invalid config value type: %s".formatted(cfgKey);
-                                    log.debug(err);
-                                    throw new IllegalArgumentException(err);
-                                }
-                            }
-                        },
-                        () -> {
-                            var err = "Config not found: %s".formatted(cfgKey);
-                            log.debug(err);
-                            throw new IllegalArgumentException(err);
-                        }
-                );
-            });
+    private void validateConfigsAndDetails(UserModifyRequest userCreate) {
+        // Limit config and details to 16 keys
+        if (userCreate.getConfig().size() > 16) {
+            var err = "Config cannot have more than 16 keys";
+            log.debug(err);
+            throw new IllegalArgumentException(err);
+        }
+        if (userCreate.getDetails().size() > 16) {
+            var err = "Details cannot have more than 16 keys";
+            log.debug(err);
+            throw new IllegalArgumentException(err);
+        }
+
+
+        // Don't allow null values, limit keys to 64 chars and values to 256 chars
+        for (String key : userCreate.getConfig().keySet()) {
+            if (key.length() > 64) {
+                var err = "Config key cannot be longer than 64 characters: %s".formatted(key);
+                log.debug(err);
+                throw new IllegalArgumentException(err);
+            }
+
+            String value = userCreate.getConfig().get(key);
+            if (value == null) {
+                var err = "Config value cannot be null: %s".formatted(key);
+                log.debug(err);
+                throw new IllegalArgumentException(err);
+            }
+            if (value.length() > 256) {
+                var err = "Config value cannot be longer than 256 characters: %s".formatted(key);
+                log.debug(err);
+                throw new IllegalArgumentException(err);
+            }
+        }
+
+        for (String key : userCreate.getDetails().keySet()) {
+            if (key.length() > 64) {
+                var err = "Detail key cannot be longer than 64 characters: %s".formatted(key);
+                log.debug(err);
+                throw new IllegalArgumentException(err);
+            }
+
+            String value = userCreate.getDetails().get(key);
+            if (value == null) {
+                var err = "Detail value cannot be null: %s".formatted(key);
+                log.debug(err);
+                throw new IllegalArgumentException(err);
+            }
+            if (value.length() > 256) {
+                var err = "Detail value cannot be longer than 256 characters: %s".formatted(key);
+                log.debug(err);
+                throw new IllegalArgumentException(err);
+            }
         }
     }
 
@@ -213,7 +236,7 @@ public class UserModifier {
             boolean isDefaultRole = userCreate.getRoles().stream().anyMatch(role -> DefaultRoles.getRoles().contains(role));
             boolean isConfiguredRole = userCreate.getRoles().stream().anyMatch(role -> userRoleRepo.findByCode(role).isPresent());
 
-            if(!isDefaultRole && !isConfiguredRole) {
+            if (!isDefaultRole && !isConfiguredRole) {
                 var err = "Role not found: %s".formatted(userCreate.getRoles());
                 log.debug(err);
                 throw new IllegalArgumentException(err);

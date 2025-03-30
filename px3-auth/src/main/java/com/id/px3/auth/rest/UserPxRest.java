@@ -1,10 +1,12 @@
 package com.id.px3.auth.rest;
 
+import com.id.px3.auth.logic.UserFinder;
 import com.id.px3.auth.logic.UserModifier;
 import com.id.px3.model.DefaultRoles;
 import com.id.px3.auth.model.entity.User;
 import com.id.px3.auth.repo.UserRepo;
 import com.id.px3.error.PxException;
+import com.id.px3.model.auth.UserFindFiltered;
 import com.id.px3.model.auth.UserModifyRequest;
 import com.id.px3.model.auth.UserDto;
 import com.id.px3.rest.PxRestControllerBase;
@@ -14,6 +16,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -27,6 +30,12 @@ public class UserPxRest extends PxRestControllerBase {
     public UserPxRest(ApplicationContext appCtx, UserRepo userRepo) {
         this.appCtx = appCtx;
         this.userRepo = userRepo;
+    }
+
+    @PostMapping("find-filtered")
+    @JwtSecured(roles = {DefaultRoles.ROOT, DefaultRoles.USERS_LIST})
+    public List<UserDto> findFiltered(@RequestBody UserFindFiltered findFilteredReq) {
+        return appCtx.getBean(UserFinder.class).findFiltered(findFilteredReq);
     }
 
     @GetMapping("password-rules")

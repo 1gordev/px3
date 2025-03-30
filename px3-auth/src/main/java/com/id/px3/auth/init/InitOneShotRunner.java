@@ -20,7 +20,6 @@ public class InitOneShotRunner {
     public void run() {
         log.info("Running one-shot initialization");
         appCtx.getBean(UserRolesInitializer.class).init();
-        appCtx.getBean(UserConfigsInitializer.class).init();
         appCtx.getBean(UserInitializer.class).init();
         appCtx.getBean(UserAccessLogRepo.class).init();
         log.info("One-shot initialization complete");

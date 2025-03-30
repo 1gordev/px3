@@ -1,21 +1,25 @@
 package com.id.px3.model.auth;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @ToString
 public class UserModifyRequest {
     private String username;
     private String password;
-    private Set<String> roles;
-    private Map<String, String> config;
-    private Map<String, String> details;
+    @Builder.Default
+    private Set<String> roles = new HashSet<>();
+    @Builder.Default
+    private Boolean active = true;
+    @Builder.Default
+    private Map<String, String> config = new HashMap<>();
+    @Builder.Default
+    private Map<String, String> details = new HashMap<>();
+    @Builder.Default
+    private List<String> indexedProps = new ArrayList<>();
 }
