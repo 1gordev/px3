@@ -3,7 +3,9 @@ package com.id.px3.crud;
 import java.util.List;
 import java.util.Map;
 
-public interface ICrudServiceBase<T, K> {
+public interface IPxCrudServiceBase<T, E, K> {
+
+    Class<E> provideEntityClass();
 
     List<T> findAll();
 

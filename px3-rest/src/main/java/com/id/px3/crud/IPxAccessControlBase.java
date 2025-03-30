@@ -3,7 +3,7 @@ package com.id.px3.crud;
 import java.util.List;
 import java.util.Map;
 
-public interface IAccessControlBase<T, K> {
+public interface IPxAccessControlBase<T, K> {
 
     void canFindAll(String userId, String authToken);
 

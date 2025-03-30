@@ -7,7 +7,7 @@ import com.id.px3.auth.repo.UserRepo;
 import com.id.px3.error.PxException;
 import com.id.px3.model.auth.UserModifyRequest;
 import com.id.px3.model.auth.UserDto;
-import com.id.px3.rest.RestControllerBase;
+import com.id.px3.rest.PxRestControllerBase;
 import com.id.px3.rest.security.JwtSecured;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
@@ -19,12 +19,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("user")
 @Slf4j
-public class UserRest extends RestControllerBase {
+public class UserPxRest extends PxRestControllerBase {
 
     private final ApplicationContext appCtx;
     private final UserRepo userRepo;
 
-    public UserRest(ApplicationContext appCtx, UserRepo userRepo) {
+    public UserPxRest(ApplicationContext appCtx, UserRepo userRepo) {
         this.appCtx = appCtx;
         this.userRepo = userRepo;
     }

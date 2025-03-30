@@ -8,13 +8,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
-import java.util.Collections;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 @RestControllerAdvice
 @Slf4j
-public abstract class RestControllerBase {
+public abstract class PxRestControllerBase {
 
     public String getAuthToken() {
         return UserContextHolder.getAuthToken();

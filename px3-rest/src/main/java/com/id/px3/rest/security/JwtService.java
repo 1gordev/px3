@@ -50,7 +50,7 @@ public class JwtService {
      * Verifies the validity of a JWT token and checks for specific roles.
      *
      * @param token         The JWT token to verify.
-     * @param requiredRoles The roles required to be present in the token.
+     * @param requiredRoles The roles required to be present in the token (at least one must match).
      * @throws JWTVerificationException if the token is expired, invalid, or does not contain the required roles.
      */
     public String validateTokenWithRoles(String token, Set<String> requiredRoles) throws JWTVerificationException {

@@ -8,7 +8,7 @@ import com.id.px3.error.PxException;
 import com.id.px3.model.auth.AuthResponse;
 import com.id.px3.model.auth.BasicAuth;
 import com.id.px3.model.auth.UserDto;
-import com.id.px3.rest.RestControllerBase;
+import com.id.px3.rest.PxRestControllerBase;
 import com.id.px3.rest.RestUtil;
 import com.id.px3.rest.security.JwtService;
 import com.id.px3.utils.DurationParser;
@@ -29,17 +29,17 @@ import java.util.Set;
 @RestController
 @RequestMapping
 @Slf4j
-public class AuthRest extends RestControllerBase {
+public class AuthPxRest extends PxRestControllerBase {
     private final UserRepo userRepo;
     private final UserAccessLogRepo userAccessLogRepo;
     private final JwtService jwtService;
     private final Duration accessTokenDuration;
     private final Duration refreshTokenDuration;
 
-    public AuthRest(UserRepo userRepo, UserAccessLogRepo userAccessLogRepo,
-                    JwtService jwtService,
-                    @Value("${px3.auth.access-token-duration:1h}") String accessTokenDuration,
-                    @Value("${px3.auth.refresh-token-duration:12h}") String refreshTokenDuration) {
+    public AuthPxRest(UserRepo userRepo, UserAccessLogRepo userAccessLogRepo,
+                      JwtService jwtService,
+                      @Value("${px3.auth.access-token-duration:1h}") String accessTokenDuration,
+                      @Value("${px3.auth.refresh-token-duration:12h}") String refreshTokenDuration) {
         this.userRepo = userRepo;
         this.userAccessLogRepo = userAccessLogRepo;
         this.jwtService = jwtService;
