@@ -2,6 +2,7 @@ package com.id.px3.crud.logic;
 
 import com.id.px3.crud.IPxCrudServiceBase;
 import com.id.px3.crud.IPxMapperBase;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.FindAndReplaceOptions;
@@ -19,11 +20,11 @@ import java.util.stream.Collectors;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
+@Getter
 @Slf4j
 public abstract class PxDefaultCrudServiceMongo<T, E, K> implements IPxCrudServiceBase<T, E, K> {
 
     public static final String DEFAULT_COLLECTION_NAME = null;
-
     private final Class<E> entityClass;
     private final String collectionName;
     private final Field idField;
