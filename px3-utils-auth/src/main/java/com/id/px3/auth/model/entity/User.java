@@ -16,8 +16,6 @@ import java.util.*;
 @Document("users")
 @CompoundIndex(name = "id_roles_idx", def = "{'id': 1, 'roles': 1}")
 @CompoundIndex(name = "id_indexedProps_idx", def = "{'id':1, 'indexedProps':1}")
-@CompoundIndex(name = "roles_indexedProps_idx", def = "{'roles':1, 'indexedProps':1}")
-@CompoundIndex(name = "id_roles_indexedProps_idx", def = "{'id':1, 'roles':1, 'indexedProps':1}")
 public class User {
 
     public static final String ID = "id";

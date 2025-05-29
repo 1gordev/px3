@@ -30,7 +30,6 @@ public class PxDefaultMapper<T, E> implements IPxMapperBase<T, E> {
         }
         try {
             E entity = entityClass.getDeclaredConstructor().newInstance();
-            // Spring's BeanUtils.copyProperties will copy only matching properties.
             BeanUtils.copyProperties(model, entity);
             return entity;
         } catch (Exception e) {
@@ -45,7 +44,6 @@ public class PxDefaultMapper<T, E> implements IPxMapperBase<T, E> {
         }
         try {
             T model = modelClass.getDeclaredConstructor().newInstance();
-            // This call will ignore properties in the source that don't exist in the target.
             BeanUtils.copyProperties(entity, model);
             return model;
         } catch (Exception e) {
