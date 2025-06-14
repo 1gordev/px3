@@ -1,4 +1,4 @@
-package com.id.px3.auth.config;
+package com.id.px3.auth.client.config;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;

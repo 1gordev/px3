@@ -1,6 +1,6 @@
-package com.id.px3.auth.service;
+package com.id.px3.auth.client.service;
 
-import com.id.px3.auth.config.AppConfig;
+import com.id.px3.auth.client.config.AppConfig;
 import com.id.px3.model.auth.AuthResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -9,13 +9,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @Service
 @Slf4j
 public class PxAuthClient {
 
-    public static final String PATH_LOGIN = "/auth/token";
+    public static final String PATH_LOGIN = "/token";
     public static final String REFRESH_TOKEN = "Refresh-Token";
-    public static final String PATH_REFRESH_TOKEN = "/auth/token/refresh";
+    public static final String PATH_REFRESH_TOKEN = "/token/refresh";
     private final AppConfig appConfig;
     private final RestTemplate restTemplate;
 

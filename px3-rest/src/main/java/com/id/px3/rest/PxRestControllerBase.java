@@ -21,18 +21,32 @@ public abstract class PxRestControllerBase {
     }
 
     @ExceptionHandler(PxException.class)
-    public final ResponseEntity<Exception> handlePxException(PxException ex, WebRequest request) {
-        if(ex.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-            log.error("PxException: %s".formatted(ex.getMessage()));
-        } else {
-            log.error("PxException: %s".formatted(ex.getMessage()), ex);
-        }
-        return new ResponseEntity<>(ex, ex.getStatusCode());
+    public final ResponseEntity<PxErrorResponse> handlePxException(PxException ex, WebRequest request) {
+        HttpStatus status = ex.getStatusCode();
+        String path = request.getDescription(false).replace("uri=", "");
+        PxErrorResponse body = new PxErrorResponse(
+                status.value(),
+                status.getReasonPhrase(),
+                ex.getMessage(),
+                path
+        );
+        log.error("PxException: {}", ex.getMessage());
+        return new ResponseEntity<>(body, status);
     }
 
     @ExceptionHandler(Exception.class)
-    public final ResponseEntity<Exception> handleAllExceptions(Exception ex, WebRequest request) {
-        log.error("Server error: %s".formatted(ex.getMessage()), ex);
-        return new ResponseEntity<>(ex, HttpStatus.INTERNAL_SERVER_ERROR);
+    public final ResponseEntity<PxErrorResponse> handleAllExceptions(Exception ex, WebRequest request) {
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        String path = request.getDescription(false).replace("uri=", "");
+        PxErrorResponse body = new PxErrorResponse(
+                status.value(),
+                status.getReasonPhrase(),
+                ex.getMessage(),
+                path
+        );
+        log.error("Server error: {}", ex.getMessage(), ex);
+        return new ResponseEntity<>(body, status);
     }
+
 }
+
