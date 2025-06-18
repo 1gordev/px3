@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AppConfig {
 
-    @Value("${px3.auth.base-url}")
+    @Value("${px3.auth.base-url:}")
     private String px3AuthBaseUrl;
 
 }

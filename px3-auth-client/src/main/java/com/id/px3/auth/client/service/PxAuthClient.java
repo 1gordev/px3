@@ -14,9 +14,9 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 public class PxAuthClient {
 
-    public static final String PATH_LOGIN = "/token";
-    public static final String REFRESH_TOKEN = "Refresh-Token";
-    public static final String PATH_REFRESH_TOKEN = "/token/refresh";
+    private static final String PATH_LOGIN = "/token";
+    private static final String REFRESH_TOKEN = "Refresh-Token";
+    private static final String PATH_REFRESH_TOKEN = "/token/refresh";
     private final AppConfig appConfig;
     private final RestTemplate restTemplate;
 
@@ -64,4 +64,5 @@ public class PxAuthClient {
         HttpEntity<?> requestEntity = new HttpEntity<>(null, headers);
         return restTemplate.postForObject(url, requestEntity, AuthResponse.class);
     }
+
 }
