@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Getter
 @Configuration
-public class AppConfig {
+public class Px3AuthClientAppConfig {
 
     @Value("${px3.auth.base-url:}")
     private String px3AuthBaseUrl;

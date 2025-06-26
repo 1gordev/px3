@@ -1,6 +1,6 @@
 package com.id.px3.auth.client.service;
 
-import com.id.px3.auth.client.config.AppConfig;
+import com.id.px3.auth.client.config.Px3AuthClientAppConfig;
 import com.id.px3.model.auth.AuthResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 
-@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @Service
 @Slf4j
 public class PxAuthClient {
@@ -17,11 +16,11 @@ public class PxAuthClient {
     private static final String PATH_LOGIN = "/token";
     private static final String REFRESH_TOKEN = "Refresh-Token";
     private static final String PATH_REFRESH_TOKEN = "/token/refresh";
-    private final AppConfig appConfig;
+    private final Px3AuthClientAppConfig px3AuthClientAppConfig;
     private final RestTemplate restTemplate;
 
-    public PxAuthClient(AppConfig appConfig, RestTemplate restTemplate) {
-        this.appConfig = appConfig;
+    public PxAuthClient(Px3AuthClientAppConfig px3AuthClientAppConfig, RestTemplate restTemplate) {
+        this.px3AuthClientAppConfig = px3AuthClientAppConfig;
         this.restTemplate = restTemplate;
     }
 
@@ -44,7 +43,7 @@ public class PxAuthClient {
      * @return Px3 AuthResponse
      */
     public AuthResponse login(String authHeader) {
-        var url = appConfig.getPx3AuthBaseUrl() + PATH_LOGIN;
+        var url = px3AuthClientAppConfig.getPx3AuthBaseUrl() + PATH_LOGIN;
         var headers = new HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, authHeader);
         HttpEntity<?> requestEntity = new HttpEntity<>(null, headers);
@@ -58,7 +57,7 @@ public class PxAuthClient {
      * @return Px3 AuthResponse
      */
     public AuthResponse refresh(String refreshToken) {
-        var url = appConfig.getPx3AuthBaseUrl() + PATH_REFRESH_TOKEN;
+        var url = px3AuthClientAppConfig.getPx3AuthBaseUrl() + PATH_REFRESH_TOKEN;
         var headers = new HttpHeaders();
         headers.set(REFRESH_TOKEN, refreshToken);
         HttpEntity<?> requestEntity = new HttpEntity<>(null, headers);
