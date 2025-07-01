@@ -42,4 +42,11 @@ public class UserFinder {
         }
         return userRepo.findAll();
     }
+
+    public UserDto findById(String userId) {
+        if (userId == null || userId.isBlank()) {
+            return null;
+        }
+        return userRepo.findByIdIn(List.of(userId)).stream().findFirst().orElse(null);
+    }
 }

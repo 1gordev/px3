@@ -6,9 +6,7 @@ import com.id.px3.model.DefaultRoles;
 import com.id.px3.auth.model.entity.User;
 import com.id.px3.auth.repo.UserRepo;
 import com.id.px3.error.PxException;
-import com.id.px3.model.auth.UserFindFiltered;
-import com.id.px3.model.auth.UserModifyRequest;
-import com.id.px3.model.auth.UserDto;
+import com.id.px3.model.auth.*;
 import com.id.px3.rest.PxRestControllerBase;
 import com.id.px3.rest.security.JwtSecured;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +30,12 @@ public class UserPxRest extends PxRestControllerBase {
         this.userRepo = userRepo;
     }
 
+    @GetMapping("{userId}")
+    @JwtSecured(roles = {DefaultRoles.ROOT, DefaultRoles.USERS_LIST})
+    public UserDto findById(@PathVariable String userId) {
+        return appCtx.getBean(UserFinder.class).findById(userId);
+    }
+
     @PostMapping("find-filtered")
     @JwtSecured(roles = {DefaultRoles.ROOT, DefaultRoles.USERS_LIST})
     public List<UserDto> findFiltered(@RequestBody UserFindFiltered findFilteredReq) {
@@ -48,6 +52,12 @@ public class UserPxRest extends PxRestControllerBase {
     @JwtSecured(roles = {DefaultRoles.ROOT, DefaultRoles.USERS_WRITE})
     public UserDto create(@RequestBody UserModifyRequest userCreate) {
         return appCtx.getBean(UserModifier.class).create(userCreate);
+    }
+
+    @PostMapping("register")
+    @JwtSecured(roles = {DefaultRoles.ROOT, DefaultRoles.USERS_WRITE})
+    public UserRegisterResponse register(@RequestBody UserRegister userRegister) {
+        return appCtx.getBean(UserModifier.class).register(userRegister);
     }
 
     @PutMapping("{userId}")

@@ -11,4 +11,6 @@ public class Px3AuthClientAppConfig {
     @Value("${px3.auth.base-url:}")
     private String px3AuthBaseUrl;
 
+    @Value("${px3.user.base-url:}")
+    private String px3UserBaseUrl;
 }

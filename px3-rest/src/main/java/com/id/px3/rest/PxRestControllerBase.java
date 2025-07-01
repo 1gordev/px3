@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
+import java.util.List;
+
 @RestControllerAdvice
 @Slf4j
 public abstract class PxRestControllerBase {
@@ -20,6 +22,10 @@ public abstract class PxRestControllerBase {
         return UserContextHolder.getUserId();
     }
 
+    public List<String> getRoles() {
+        return UserContextHolder.getRoles();
+    }
+
     @ExceptionHandler(PxException.class)
     public final ResponseEntity<PxErrorResponse> handlePxException(PxException ex, WebRequest request) {
         HttpStatus status = ex.getStatusCode();
@@ -30,7 +36,7 @@ public abstract class PxRestControllerBase {
                 ex.getMessage(),
                 path
         );
-        log.error("PxException: {}", ex.getMessage());
+        log.error("PxException: {}", ex.getMessage(), ex);
         return new ResponseEntity<>(body, status);
     }
 

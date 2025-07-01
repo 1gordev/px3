@@ -7,6 +7,8 @@ import com.id.px3.auth.repo.UserRepo;
 import com.id.px3.auth.repo.UserRoleRepo;
 import com.id.px3.model.auth.UserModifyRequest;
 import com.id.px3.model.auth.UserDto;
+import com.id.px3.model.auth.UserRegister;
+import com.id.px3.model.auth.UserRegisterResponse;
 import com.id.px3.utils.SafeConvert;
 import com.id.px3.utils.sec.PasswordUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +51,41 @@ public class UserModifier {
     public String getPasswordRules() {
         return passwordRules.pattern();
     }
+
+    /**
+     * Register a new user. This method is an alternative to create.
+     *
+     * @param userRegister
+     * @return
+     */
+    public UserRegisterResponse register(UserRegister userRegister) {
+        // Check if the user already exists
+        if (userRepo.findByUsername(userRegister.getUser().getUsername()).isPresent()) {
+            var err = "Username already exists: %s".formatted(userRegister.getUser().getUsername());
+            log.debug(err);
+            return UserRegisterResponse.builder()
+                    .success(false)
+                    .alreadyExists(true)
+                    .build();
+        }
+
+        // Create the user
+        UserDto createdUser = create(UserModifyRequest.builder()
+                .username(userRegister.getUser().getUsername())
+                .password(userRegister.getPassword())
+                .roles(userRegister.getUser().getRoles())
+                .active(userRegister.getUser().getActive())
+                .config(userRegister.getUser().getConfig())
+                .details(userRegister.getUser().getDetails())
+                .build());
+        log.debug("User registered: %s".formatted(createdUser));
+
+        return UserRegisterResponse.builder()
+                .success(true)
+                .userId(createdUser.getId())
+                .build();
+    }
+
 
     /**
      * Create a new user
