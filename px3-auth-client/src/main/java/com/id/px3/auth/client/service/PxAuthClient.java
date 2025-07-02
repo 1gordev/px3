@@ -10,6 +10,8 @@ import com.id.px3.rest.security.JwtService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -23,19 +25,19 @@ import java.util.*;
 public class PxAuthClient {
 
     private static final String PATH_LOGIN = "/token";
-    private static final String PATH_NEW_USER = "/new-user";
+    private static final String PATH_REGISTER = "/register";
     private static final String PATH_SET_ACTIVE = "/set-active";
     private static final String REFRESH_TOKEN = "Refresh-Token";
     private static final String PATH_REFRESH_TOKEN = "/token/refresh";
     private final JwtService jwtService;
-    private final Px3AuthClientAppConfig px3AuthClientAppConfig;
+    private final Px3AuthClientAppConfig appCfg;
     private final RestTemplate restTemplate;
 
     public PxAuthClient(JwtService jwtService,
-                        Px3AuthClientAppConfig px3AuthClientAppConfig,
+                        Px3AuthClientAppConfig appCfg,
                         RestTemplate restTemplate) {
         this.jwtService = jwtService;
-        this.px3AuthClientAppConfig = px3AuthClientAppConfig;
+        this.appCfg = appCfg;
         this.restTemplate = restTemplate;
     }
 
@@ -58,7 +60,7 @@ public class PxAuthClient {
      * @return Px3 AuthResponse
      */
     public AuthResponse login(String authHeader) {
-        var url = px3AuthClientAppConfig.getPx3AuthBaseUrl() + PATH_LOGIN;
+        var url = appCfg.getPx3AuthBaseUrl() + PATH_LOGIN;
         var headers = new HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, authHeader);
         HttpEntity<?> requestEntity = new HttpEntity<>(null, headers);
@@ -72,7 +74,7 @@ public class PxAuthClient {
      * @return Px3 AuthResponse
      */
     public AuthResponse refresh(String refreshToken) {
-        var url = px3AuthClientAppConfig.getPx3AuthBaseUrl() + PATH_REFRESH_TOKEN;
+        var url = appCfg.getPx3AuthBaseUrl() + PATH_REFRESH_TOKEN;
         var headers = new HttpHeaders();
         headers.set(REFRESH_TOKEN, refreshToken);
         HttpEntity<?> requestEntity = new HttpEntity<>(null, headers);
@@ -102,15 +104,15 @@ public class PxAuthClient {
      * @param config   configuration settings for the user
      * @return UserRegisterResponse containing information about the created user
      */
-    public UserRegisterResponse createNewUser(String username,
-                                              String password,
-                                              List<String> roles,
-                                              boolean active,
-                                              Map<String, String> details,
-                                              Map<String, String> config) {
-        var url = px3AuthClientAppConfig.getPx3AuthBaseUrl() + PATH_NEW_USER;
+    public UserRegisterResponse registerNewUser(String username,
+                                                String password,
+                                                List<String> roles,
+                                                boolean active,
+                                                Map<String, String> details,
+                                                Map<String, String> config) {
+        var url = appCfg.getPx3UserBaseUrl() + PATH_REGISTER;
         var headers = new HttpHeaders();
-        headers.set(HttpHeaders.AUTHORIZATION, generateSystemToken());
+        headers.setBearerAuth(generateSystemToken());
         HttpEntity<?> requestEntity = new HttpEntity<>(UserRegister.builder()
                 .user(UserDto.builder()
                         .id(UUID.randomUUID().toString())
@@ -127,9 +129,9 @@ public class PxAuthClient {
     }
 
     public boolean setUserActive(String userId, boolean active) {
-        var url = "%s/%s/%s/%s".formatted(px3AuthClientAppConfig.getPx3UserBaseUrl(), PATH_SET_ACTIVE, userId, active);
+        var url = "%s/%s/%s/%s".formatted(appCfg.getPx3UserBaseUrl(), PATH_SET_ACTIVE, userId, active);
         var headers = new HttpHeaders();
-        headers.set(HttpHeaders.AUTHORIZATION, generateSystemToken());
+        headers.setBearerAuth(generateSystemToken());
         HttpEntity<?> requestEntity = new HttpEntity<>(null, headers);
         try {
             restTemplate.put(url, requestEntity);
@@ -141,12 +143,18 @@ public class PxAuthClient {
     }
 
     public UserDto findUserById(String userId) {
-        var url = "%s/%s".formatted(px3AuthClientAppConfig.getPx3UserBaseUrl(), userId);
+        var url = "%s/%s".formatted(appCfg.getPx3UserBaseUrl(), userId);
         var headers = new HttpHeaders();
-        headers.set(HttpHeaders.AUTHORIZATION, generateSystemToken());
-        HttpEntity<?> requestEntity = new HttpEntity<>(null, headers);
+        headers.setBearerAuth(generateSystemToken());
+        HttpEntity<?> requestEntity = new HttpEntity<>(headers);
         try {
-            return restTemplate.getForObject(url, UserDto.class, requestEntity);
+            ResponseEntity<UserDto> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    requestEntity,
+                    UserDto.class
+            );
+            return response.getBody();
         } catch (Exception e) {
             log.error("Failed to find user by ID: {}", userId, e);
             return null;

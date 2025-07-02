@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -196,5 +197,17 @@ public class UserRepo {
      */
     public List<UserDto> findAll() {
         return mongoTemplate.findAll(User.class).stream().map(UserFactory::toDto).toList();
+    }
+
+    /**
+     * Set the active status of a user
+     *
+     * @param userId - user id
+     * @param activeStatus - active status
+     */
+    public void setActiveStatus(String userId, boolean activeStatus) {
+        mongoTemplate.updateFirst(query(where(User.ID).is(userId)),
+                new Update().set(User.ACTIVE, activeStatus),
+                User.class);
     }
 }

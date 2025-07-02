@@ -60,6 +60,13 @@ public class UserPxRest extends PxRestControllerBase {
         return appCtx.getBean(UserModifier.class).register(userRegister);
     }
 
+    @PutMapping("set-active/{userId}/{active}")
+    @JwtSecured(roles = {DefaultRoles.ROOT, DefaultRoles.USERS_WRITE})
+    public UserDto setActive(@PathVariable String userId, @PathVariable boolean active) {
+        appCtx.getBean(UserModifier.class).setActive(userId, active);
+        return appCtx.getBean(UserFinder.class).findById(userId);
+    }
+
     @PutMapping("{userId}")
     @JwtSecured
     public UserDto update(@PathVariable String userId, @RequestBody UserModifyRequest userModify) {

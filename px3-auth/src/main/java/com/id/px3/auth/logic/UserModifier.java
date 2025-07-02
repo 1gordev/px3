@@ -291,4 +291,7 @@ public class UserModifier {
         };
     }
 
+    public void setActive(String userId, boolean activeStatus) {
+        userRepo.setActiveStatus(userId, activeStatus);
+    }
 }
