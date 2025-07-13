@@ -36,7 +36,11 @@ public abstract class PxRestControllerBase {
                 ex.getMessage(),
                 path
         );
-        log.error("PxException: {}", ex.getMessage(), ex);
+        if(ex.getStatusCode() == HttpStatus.UNAUTHORIZED && ex.getMessage().contains("Token has expired")) {
+            log.debug("PxException: Unauthorized access due to expired token: {}", ex.getMessage());
+        } else {
+            log.error("PxException: {}", ex.getMessage(), ex);
+        }
         return new ResponseEntity<>(body, status);
     }
 
