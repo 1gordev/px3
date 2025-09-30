@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -28,7 +29,7 @@ public abstract class PxRestControllerBase {
 
     @ExceptionHandler(PxException.class)
     public final ResponseEntity<PxErrorResponse> handlePxException(PxException ex, WebRequest request) {
-        HttpStatus status = ex.getStatusCode();
+        HttpStatus status = HttpStatus.valueOf(ex.getStatusCode().value());
         String path = request.getDescription(false).replace("uri=", "");
         PxErrorResponse body = new PxErrorResponse(
                 status.value(),
@@ -58,5 +59,29 @@ public abstract class PxRestControllerBase {
         return new ResponseEntity<>(body, status);
     }
 
-}
+    @ExceptionHandler(ResponseStatusException.class)
+    public final ResponseEntity<PxErrorResponse> handleResponseStatusException(ResponseStatusException ex, WebRequest request) {
+        HttpStatus status;
+        try {
+            status = HttpStatus.valueOf(ex.getStatusCode().value());
+        } catch (Exception e) {
+            log.error("Invalid HTTP status code in ResponseStatusException: {}", ex.getStatusCode(), e);
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+        String path = request.getDescription(false).replace("uri=", "");
+        String message = ex.getReason() != null ? ex.getReason() : ex.getMessage();
+        PxErrorResponse body = new PxErrorResponse(
+                status.value(),
+                status.getReasonPhrase(),
+                message,
+                path
+        );
+        if (status.is4xxClientError()) {
+            log.debug("Client error: {} - {}", status, message);
+        } else {
+            log.error("ResponseStatusException: {}", ex.getMessage(), ex);
+        }
+        return new ResponseEntity<>(body, status);
+    }
 
+}
