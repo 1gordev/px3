@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.*;
 
@@ -30,6 +31,7 @@ public class User {
     public static final String CFG_TOKEN_NEVER_EXPIRES = "tokenNeverExpires";
 
     @Id
+    @Field("_id")
     private String id;
 
     @Indexed(unique = true)

@@ -7,6 +7,7 @@ import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.Instant;
 
@@ -27,6 +28,7 @@ public class UserAccessLog {
     public final static String REFRESH_TOKEN_EXPIRE_AT = "refreshTokenExpireAt";
 
     @Id
+    @Field("_id")
     private String id;
 
     @Indexed(unique = true)
